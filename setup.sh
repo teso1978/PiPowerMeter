@@ -13,7 +13,7 @@ wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-nvm install --lts
+nvm install 15
 sudo cp -R $NVM_DIR/versions/node/$(nvm version)/* /usr/local/
 
 # install git
@@ -29,7 +29,7 @@ cd ~
 # install and configure PiPowerMeter
 if [ ! -d "app" ]; then
     echo '>>> Install PiPowerMeter'
-    git clone https://github.com/crjens/PiPowerMeter.git app
+    git clone https://github.com/teso1978/PiPowerMeter.git app
     cd app
     npm install
     ASK_TO_REBOOT=1
