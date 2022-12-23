@@ -69,10 +69,13 @@ Software Installation
 3. login to Pi with Putty or other ssh client
 	1. the latest versions of Raspbian have ssh disabled.  You can enable ssh via raspi-config or just create an empty file named 'ssh' in the boot partition of the sd card.
 4. Install the PiPowerMeter software by running the following command (you must install with root privileges such as the built-in pi account):
-	1. wget -O - https://raw.githubusercontent.com/crjens/PiPowerMeter/master/setup.sh | bash
+	1. wget -O - https://raw.githubusercontent.com/teso1978/PiPowerMeter/master/setup.sh | bash
 5. run 'sudo raspi-config' 
 	1. set locale and timezone under Localisation options
 	2. expand filesystem under Advanced options
 	3. change user password (optional)
 	4. reboot when prompted after exiting raspi-config
 6. Open your browser to http://<Your Raspberry Pi's IP Address>:3000
+7. For advanced configuration add end of the path ?advanced=1
+8. For MQTT setting add this format: mqtt://user:password@ipaddressofbroker:1883
+
