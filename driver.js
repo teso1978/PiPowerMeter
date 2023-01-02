@@ -154,10 +154,11 @@ var loadConfiguration = function (callback) {
                     mqttClient.on('connect', function (o) {
                          console.log('Connected to mqtt: ' + data.Configuration.MqttServer + " : " + JSON.stringify(mqttOptions) + " - " + JSON.stringify(o));
                          mqttConnected = true;
+
                          for (var i = 0; i < data.Circuits.length; i++) {
                             ha_mqtt_send_conf(i+1, data.Circuits[i].Name);
                          }
-                         
+                         subscrise_to_ha();
                     });
 
                     mqttClient.on('error', function (error) {
@@ -210,7 +211,7 @@ var loadConfiguration = function (callback) {
 }
 
 var subscrise_to_ha = function() {
-    mqttClient.subscribe("homeassistant/#");
+    mqttClient.subscribe("homeassistant/status");
 }
 
 
@@ -499,7 +500,7 @@ reader.on('message', function (msg) {
             if (circuit.Samples.length > 0) {
                 //console.log(JSON.stringify(circuit.Samples[0]));
                 db.insert(circuit.id, circuit.Samples[0].iRms, circuit.Samples[0].vRms, pTotal, qTotal, circuit.Samples[0].pf, new Date(circuit.Samples[0].ts), circuit.Samples[0].CalculatedFrequency);
-                console.log(circuit.Name + ' : V= ' + circuit.Samples[0].vRms.round(1) + '  I= ' + circuit.Samples[0].iRms.round(1) + '  P= ' + pTotal.round(1) + '  Q= ' + qTotal.round(1) + '  PF= ' + circuit.Samples[0].pf.round(4) + '  F= ' + circuit.Samples[0].CalculatedFrequency.round(3) + '  F2= ' + circuit.Samples[0].freq.round(3) + ' (' + circuit.Samples[0].tsInst.length + ' samples in ' + circuit.Samples[0].tsInst[circuit.Samples[0].tsInst.length - 1] + 'ms)');
+                //console.log(circuit.Name + ' : V= ' + circuit.Samples[0].vRms.round(1) + '  I= ' + circuit.Samples[0].iRms.round(1) + '  P= ' + pTotal.round(1) + '  Q= ' + qTotal.round(1) + '  PF= ' + circuit.Samples[0].pf.round(4) + '  F= ' + circuit.Samples[0].CalculatedFrequency.round(3) + '  F2= ' + circuit.Samples[0].freq.round(3) + ' (' + circuit.Samples[0].tsInst.length + ' samples in ' + circuit.Samples[0].tsInst[circuit.Samples[0].tsInst.length - 1] + 'ms)');
                 var json_loc;
                 if (mqttClient != null && mqttConnected == true) {
                     try {
