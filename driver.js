@@ -10,7 +10,16 @@ var netUtils = require('./utils.js');
 var fs = require("fs");
 var common = require("./common");
 var mqtt = null, mqttClient = null, mqttConnected = false;
+var ha_config1 = '{"name": "test", "device_class": "voltage", "name": "Voltage", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "V", "value_template": "{{ value_json.voltage}}" }';
+var ha_config2 = '{"name": "test", "device_class": "current", "name": "Current", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "A", "value_template": "{{ value_json.current}}" }';
+var ha_config3 = '{"name": "test", "device_class": "power", "name": "Watts", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "W", "value_template": "{{ value_json.watts}}" }';
+var ha_config4 = '{"name": "test", "device_class": "power", "name": "Vars", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "VAr", "value_template": "{{ value_json.vars}}" }';
+var ha_config5 = '{"name": "test", "device_class": "none", "name": "PowerFactor", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "", "value_template": "{{ value_json.pf}}" }';
+var ha_config6 = '{"name": "test", "device_class": "frequency", "name": "Frequency", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "Hz", "value_template": "{{ value_json.frequency}}" }';
+var ha_config7 = '{"name": "test", "device_class": "energy", "name": "LastDaykWh", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "kWh", "value_template": "{{ value_json.lastdaykwh}}" }';
+var ha_config8 = '{"name": "test", "device_class": "timestamp", "name": "TimeStamp", "state_topic": "homeassistant/sensor/PiPowerMeter/1/state", "unit_of_measurement": "", "value_template": "{{ value_json.timestamp}}" }';
 
+var payload = '{"voltage" : 230.1 , "current" : 0.1 , "watts" : 0.1, "vars" : 0.1, "pf" : 1, "frequency" : 50, "lastdaykwh" : 1, "timestamp" : "2018-12-10T13:49:51.141Z" }';
 // load currently installed software version and check for updates every hour
 var exec = require('child_process').exec, softwareVersion = null;
 (function checkForUpdates() {
@@ -30,7 +39,7 @@ var exec = require('child_process').exec, softwareVersion = null;
                     var obj = { Installed: { Sha: currentSha, Timestamp: currentDate } };
 
                     // get latest commit from github
-                    exec("curl https://api.github.com/repos/crjens/pipowermeter/git/refs/heads/master", function (error, stdout, stderr) {
+                    exec("curl https://api.github.com/repos/teso1978/pipowermeter/git/refs/heads/master", function (error, stdout, stderr) {
                         if (error)
                             console.error('unable to fetch latest commit from github: ' + error);
                         else {
@@ -145,6 +154,10 @@ var loadConfiguration = function (callback) {
                     mqttClient.on('connect', function (o) {
                          console.log('Connected to mqtt: ' + data.Configuration.MqttServer + " : " + JSON.stringify(mqttOptions) + " - " + JSON.stringify(o));
                          mqttConnected = true;
+                         for (var i = 0; i < data.Circuits.length; i++) {
+                            ha_mqtt_send_conf(i+1, data.Circuits[i].Name);
+                         }
+                         
                     });
 
                     mqttClient.on('error', function (error) {
@@ -156,6 +169,27 @@ var loadConfiguration = function (callback) {
                     mqttClient.on('close', function () {
                          console.log('Closed mqtt');
                          mqttConnected = false;
+                    });
+                    mqttClient.on('message', function (topic, rawMessage) {
+                        try {
+                            var msg = rawMessage.toString();
+                            console.log("Received MQTT topic: " + topic.toString());
+                    
+                            if (topic === "homeassistant/status") {
+                                // Turn off radio player when TV is turned on
+                                if (msg === "online") {
+                                    for (var i = 0; i < data.Circuits.length; i++) {
+                                        ha_mqtt_send_conf(i+1, data.Circuits.Name);
+                                    }
+                                }
+                                console.log("Received message: " + msg);
+                                return;
+                            }
+                    
+                            
+                        } catch (e) {
+                            console.log(e);
+                        }
                     });
                 }
                 catch (err) {
@@ -173,6 +207,68 @@ var loadConfiguration = function (callback) {
         if (callback != null)
             callback(err, data.Configuration);
     });
+}
+
+var subscrise_to_ha = function() {
+    mqttClient.subscribe("homeassistant/#");
+}
+
+
+
+var ha_mqtt_send_conf = function(id, name) {
+    if (mqttClient != null && mqttConnected == true) {
+        try {
+            
+            var topic = 'homeassistant/sensor/PiPowerMeter/' + id + '/state';
+            var json = JSON.parse(ha_config1);
+            json.state_topic = topic;
+            json.name = name + ' voltage';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterV/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config2);
+            json.state_topic = topic;
+            json.name = name+ ' current';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterA/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config3);
+            json.state_topic = topic;
+            json.name = name+ ' watts';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterW/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config4);
+            json.state_topic = topic;
+            json.name = name+ ' vars';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterVAr/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config5);
+            json.state_topic = topic;
+            json.name = name+ ' pf';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterPF/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config6);
+            json.state_topic = topic;
+            json.name = name+ ' frequency';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterHz/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config7);
+            json.state_topic = topic;
+            json.name = name+ ' kwh';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterKWH/' + id + '/config', JSON.stringify(json));
+            json = JSON.parse(ha_config8);
+            json.state_topic = topic;
+            json.name = name+ ' timestamp';
+            mqttClient.publish('homeassistant/sensor/PiPowerMeterTS/' + id + '/config', JSON.stringify(json));
+        }
+        catch (err) {
+            console.error("Error writing configuration to MQTT server: " + ".  Error: " + err + ". JSON: " + JSON.stringify(json));
+        }
+    }
+}
+
+var ha_mqtt_send_data = function(id, json) {
+    if (mqttClient != null && mqttConnected == true) {
+        try {
+            
+            mqttClient.publish('homeassistant/sensor/PiPowerMeter/' + id + '/state', JSON.stringify(json));
+        }
+        catch (err) {
+            console.error("Error writing configuration to MQTT server: " + ".  Error: " + err +" JSON: " + JSON.stringify(json));
+        }
+    }
 }
 
 var scheduleNextRollupMessage = function () {
@@ -404,10 +500,10 @@ reader.on('message', function (msg) {
                 //console.log(JSON.stringify(circuit.Samples[0]));
                 db.insert(circuit.id, circuit.Samples[0].iRms, circuit.Samples[0].vRms, pTotal, qTotal, circuit.Samples[0].pf, new Date(circuit.Samples[0].ts), circuit.Samples[0].CalculatedFrequency);
                 console.log(circuit.Name + ' : V= ' + circuit.Samples[0].vRms.round(1) + '  I= ' + circuit.Samples[0].iRms.round(1) + '  P= ' + pTotal.round(1) + '  Q= ' + qTotal.round(1) + '  PF= ' + circuit.Samples[0].pf.round(4) + '  F= ' + circuit.Samples[0].CalculatedFrequency.round(3) + '  F2= ' + circuit.Samples[0].freq.round(3) + ' (' + circuit.Samples[0].tsInst.length + ' samples in ' + circuit.Samples[0].tsInst[circuit.Samples[0].tsInst.length - 1] + 'ms)');
-
+                var json_loc;
                 if (mqttClient != null && mqttConnected == true) {
                     try {
-                        mqttClient.publish('PiPowerMeter/' + circuit.id + '/Name', circuit.Name);
+                        /* mqttClient.publish('PiPowerMeter/' + circuit.id + '/Name', circuit.Name);
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/Voltage', circuit.Samples[0].vRms.round(1));
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/Current', circuit.Samples[0].iRms.round(2));
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/Watts', pTotal.round(1));
@@ -415,11 +511,23 @@ reader.on('message', function (msg) {
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/PowerFactor', circuit.Samples[0].pf.round(4));
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/Timestamp', circuit.Samples[0].ts);
                         mqttClient.publish('PiPowerMeter/' + circuit.id + '/Frequency', circuit.Samples[0].CalculatedFrequency.round(3));
+
                         if (circuit.LastDayKwh != null)
                             mqttClient.publish('PiPowerMeter/' + circuit.id + '/LastDayKwh', circuit.LastDayKwh.round(1));
+                         *///'{"voltage" : 230.1 , "current" : 0.1 , "watts" : 0.1, "vars" : 0.1, "pf" : 1, "frequency" : 50, "lastdaykwh" : 1, "timestamp" : 2023-01-01 }';
+                        json_loc = JSON.parse(payload);
+                        json_loc.voltage = circuit.Samples[0].vRms.round(1);
+                        json_loc.current = circuit.Samples[0].iRms.round(2);
+                        json_loc.watts = pTotal.round(1);
+                        json_loc.vars = qTotal.round(1);
+                        json_loc.pf = circuit.Samples[0].pf.round(4);
+                        json_loc.timestamp = circuit.Samples[0].ts;
+                        json_loc.frequency = circuit.Samples[0].CalculatedFrequency.round(3);
+                        json_loc.lastdaykwh = circuit.LastDayKwh.round(1);
+                        ha_mqtt_send_data(circuit.id, json_loc);
                     }
                     catch (err) {
-                        console.error("Error writing to MQTT server: " + data.MqttServer + ".  Error: " + err);
+                        console.error("Error writing to MQTT server: " + data.MqttServer + ".  Error: " + err + " JSON:: " + JSON.stringify(json_loc));
                     }
                 }
             } else {
@@ -820,3 +928,4 @@ var exports = {
 };
 
 module.exports = exports;
+
