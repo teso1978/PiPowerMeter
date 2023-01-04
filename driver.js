@@ -180,7 +180,7 @@ var loadConfiguration = function (callback) {
                                 // Turn off radio player when TV is turned on
                                 if (msg === "online") {
                                     for (var i = 0; i < data.Circuits.length; i++) {
-                                        ha_mqtt_send_conf(i+1, data.Circuits.Name);
+                                        ha_mqtt_send_conf(i+1, data.Circuits[i].Name);
                                     }
                                 }
                                 console.log("Received message: " + msg);
