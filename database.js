@@ -118,7 +118,7 @@ var powerDb = new sqlite3.Database(databaseFile, function (err) {
 		    
 		db.runSql("Insert or ignore into Config Values('VoltageScale', '380');", null, true);
 		    
-                db.runSql("Insert or ignore into Config Values('Probes', '[{''Name'':''SCT-006'',''Factor'':''40''},{''Name'':''SCT-010'',''Factor'':''150''},{''Name'':''SCT-013'',''Factor'':''100''},{''Name'':''SCT-016'',''Factor'':''150''},{''Name'':''SCT-019'',''Factor'':''300''},{"Name":"ZMCT103C","Factor":"25"}]');", null, true);
+                db.runSql("Insert or ignore into Config Values('Probes', '[{''Name'':''SCT-006'',''Factor'':''40''},{''Name'':''SCT-010'',''Factor'':''150''},{''Name'':''SCT-013'',''Factor'':''100''},{''Name'':''SCT-016'',''Factor'':''150''},{''Name'':''SCT-019'',''Factor'':''300''},{''Name'':''ZMCT103C'',''Factor'':''25''}]');", null, true);
 
                 console.log('Config table ready');
                 TableStates.Config = true;
