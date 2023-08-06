@@ -111,11 +111,14 @@ var powerDb = new sqlite3.Database(databaseFile, function (err) {
                 db.runSql("Insert or ignore into Config Values('Port', '3000');", null, true);
                 db.runSql("Insert or ignore into Config Values('SampleTime', '1');", null, true);
                 db.runSql("Insert or ignore into Config Values('DeviceName', '');", null, true);
-                db.runSql("Insert or ignore into Config Values('Price', '0.1');", null, true);
+                db.runSql("Insert or ignore into Config Values('Price', '44');", null, true);
                 db.runSql("Insert or ignore into Config Values('Region', 'en-US');", null, true);
-                db.runSql("Insert or ignore into Config Values('VoltageScale', '354');", null, true);
-
-                db.runSql("Insert or ignore into Config Values('Probes', '[{''Name'':''SCT-006'',''Factor'':''40''},{''Name'':''SCT-010'',''Factor'':''150''},{''Name'':''SCT-013'',''Factor'':''100''},{''Name'':''SCT-016'',''Factor'':''150''},{''Name'':''SCT-019'',''Factor'':''300''}]');", null, true);
+                db.runSql("Insert or ignore into Config Values('MqttServer', 'mqtt://192.168.88.2:1883');", null, true);
+		db.runSql("Insert or ignore into Config Values('MqttOptions', '''clientId:mqttjson01''');", null, true);
+		    
+		db.runSql("Insert or ignore into Config Values('VoltageScale', '380');", null, true);
+		    
+                db.runSql("Insert or ignore into Config Values('Probes', '[{''Name'':''SCT-006'',''Factor'':''40''},{''Name'':''SCT-010'',''Factor'':''150''},{''Name'':''SCT-013'',''Factor'':''100''},{''Name'':''SCT-016'',''Factor'':''150''},{''Name'':''SCT-019'',''Factor'':''300''},{"Name":"ZMCT103C","Factor":"25"}]');", null, true);
 
                 console.log('Config table ready');
                 TableStates.Config = true;
