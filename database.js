@@ -109,7 +109,7 @@ var powerDb = new sqlite3.Database(databaseFile, function (err) {
             } else {
 
                 db.runSql("Insert or ignore into Config Values('Port', '3000');", null, true);
-                db.runSql("Insert or ignore into Config Values('SampleTime', '1');", null, true);
+                db.runSql("Insert or ignore into Config Values('SampleTime', '0.3');", null, true);
                 db.runSql("Insert or ignore into Config Values('DeviceName', '');", null, true);
                 db.runSql("Insert or ignore into Config Values('Price', '44');", null, true);
                 db.runSql("Insert or ignore into Config Values('Region', 'en-US');", null, true);
